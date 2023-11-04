@@ -1,0 +1,89 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2; /* Light gray background for readability */
+    color: #333; /* Dark gray text color for contrast */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0; /* Remove default body margin */
+}
+
+/* Container Styles */
+.container {
+    text-align: center;
+    width: 90%; /* Wider container for improved layout */
+    max-width: 800px; /* Increased maximum width */
+    background-color: #fff; /* White background for a clean appearance */
+    padding: 20px; /* Add padding for separation */
+    border-radius: 10px; /* Rounded corners for a smoother look */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle box shadow for depth */
+}
+
+/* Button Styles */
+.btn {
+    margin: 10px;
+    padding: 12px 24px; /* Increased button padding for better touch usability */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    color: #fff; /* White text for contrast */
+    transition: background-color 0.3s; /* Smooth background color transition */
+
+    /* Default Button Style */
+    background-color: #007BFF;
+}
+
+/* Create Button */
+.create {
+    background-color: #28A745; /* Green for "Create" button */
+}
+
+/* Join Button */
+.join {
+    background-color: #17A2B8; /* Blue for "Join" button */
+}
+
+/* List Styles */
+#tournamentList {
+    list-style-type: none;
+    padding: 0;
+}
+
+/* Bracket Styles */
+.bracket {
+    display: flex;
+    justify-content: space-between;
+    background-color: #f5f5f5; /* Light gray background for separation */
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px 0;
+}
+
+/* Round Styles */
+.round {
+    background-color: #333;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+/* Match Styles */
+.match {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: 1px solid #666; /* Slightly lighter border color */
+    padding: 10px;
+}
+
+/* Score Styles */
+.score {
+    background-color: #f5f5f5; /* Light gray background for separation */
+    padding: 5px; /* Increased padding for touch usability */
+    text-align: center;
+    border-radius: 5px;
+}

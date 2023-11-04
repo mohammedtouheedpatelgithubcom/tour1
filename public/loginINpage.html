@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battle Tour</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.3.1/firebase-app-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.3.1/firebase-auth-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.3.1/firebase-database-compat.js"></script>
+    <script type="text/javascript" src="jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="jquery.bracket.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="jquery.bracket.min.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>Battle Tour</h1>
+        <button class="btn create" onclick="createTournament()">Create</button>
+        <button class="btn join" onclick="joinTournament()">Join</button>
+        <button class="btn list" onclick="listTournaments()">List of Tournaments</button>
+        
+        <button class="btn logout" onclick="logout()">Logout</button>
+        <ul id="tournamentList"></ul>
+        <div class="bracket" id="bracket"></div>
+    </div>
+    <script>
+        // Firebase Initialization
+        var firebaseConfig = {
+  apiKey: "AIzaSyBkfwIqWiUTpOuP-_uNu5TbrTO_qgJSpx0",
+  authDomain: "battletour-9dc70.firebaseapp.com",
+  projectId: "battletour-9dc70",
+  storageBucket: "battletour-9dc70.appspot.com",
+  messagingSenderId: "512161971269",
+  appId: "1:512161971269:web:3feacdc28583b679c6772c"
+};
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+
+
+function createTournament() {
+    // Function to create a new tournament
+    const tournamentName = prompt("Enter tournament name:");
+    if (tournamentName) {
+        database.ref('tournaments/').push({
+            name: tournamentName,
+            status: "pending"
+        });
+    }
+    alert("Create tournament clicked!");
+}
+
+function joinTournament() {
+    // Function to join a tournament
+    const tournamentId = prompt("Enter tournament ID to join:");
+    if (tournamentId) {
+        database.ref('tournaments/' + tournamentId).update({
+            status: "joined"
+        });
+    }
+    alert("Join tournament clicked!");
+}
+
+function listTournaments() {
+    // Function to list all tournaments
+    database.ref('tournaments/').once('value', (snapshot) => {
+        const tournaments = snapshot.val();
+        const listElement = document.getElementById('tournamentList');
+        listElement.innerHTML = ""; // Clear previous list
+        for (let id in tournaments) {
+            let li = document.createElement("li");
+            li.innerText = `${tournaments[id].name} - ${tournaments[id].status}`;
+            listElement.appendChild(li);
+        }
+    });
+    alert("List of tournaments clicked!");
+}
+function renderBracket(matches) {
+    const bracketElement = document.getElementById("bracket");
+
+    matches.forEach(round => {
+        const roundElement = document.createElement("div");
+        roundElement.classList.add("round");
+
+        round.matches.forEach(match => {
+            const matchElement = document.createElement("div");
+            matchElement.classList.add("match");
+
+            matchElement.innerHTML = `
+                <div>${match.team1.name} <span class="score">${match.team1.score}</span></div>
+                <div>${match.team2.name} <span class="score">${match.team2.score}</span></div>
+            `;
+
+            roundElement.appendChild(matchElement);
+        });
+
+        bracketElement.appendChild(roundElement);
+    });
+}
+
+database.ref("/matches").on("value", snapshot => {
+    const matches = snapshot.val();
+    renderBracket(matches);
+});
+
+function logout() {
+    // Logout function
+    firebase.auth().signOut()
+    .then(() => {
+        alert('Logged out successfully!');
+        window.location.href = "index.html";
+        
+    })
+    .catch((error) => {
+        alert('Error logging out: ' + error.message);
+    });
+}
+
+    </script>
+
+    <!-- Firebase Scripts -->
+</body>
+</html>
