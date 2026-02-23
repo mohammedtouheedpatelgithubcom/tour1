@@ -2,3 +2,6 @@ node_modules/
 .firebase/
 firebase-debug.log
 npm-debug.log*
+
+# Firebase config with sensitive keys
+public/firebase-config.js
