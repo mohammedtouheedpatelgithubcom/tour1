@@ -1,0 +1,73 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "profiles": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+    "tournaments": {
+      ".read": "auth != null",
+      "$tournamentId": {
+        ".write": "auth != null",
+        "name": {
+          ".validate": "newData.isString() && newData.val().matches(/^[a-zA-Z0-9 _-]{3,60}$/)"
+        },
+        "ownerUid": {
+          ".validate": "newData.isString() && ((!data.exists() && newData.val() === auth.uid) || (data.exists() && newData.val() === data.val()))"
+        },
+        "createdAt": {
+          ".validate": "newData.exists()"
+        },
+        "gameType": {
+          ".validate": "!newData.exists() || (newData.isString() && newData.val().matches(/^[a-zA-Z0-9_-]{3,30}$/))"
+        },
+        "format": {
+          ".validate": "!newData.exists() || (newData.isString() && newData.val().matches(/^(knockout|round_robin|league_knockout)$/))"
+        },
+        "joinDeadline": {
+          ".validate": "!newData.exists() || newData.isNumber()"
+        },
+        "startAt": {
+          ".validate": "!newData.exists() || newData.isNumber()"
+        },
+        "matchDurationMinutes": {
+          ".validate": "!newData.exists() || (newData.isNumber() && newData.val() >= 10 && newData.val() <= 240)"
+        },
+        "breakMinutes": {
+          ".validate": "!newData.exists() || (newData.isNumber() && newData.val() >= 0 && newData.val() <= 120)"
+        },
+        "maxParticipants": {
+          ".validate": "!newData.exists() || (newData.isNumber() && newData.val() >= 2 && newData.val() <= 64)"
+        },
+        "seedTeams": {
+          "$index": {
+            ".validate": "newData.isString() && newData.val().matches(/^[a-zA-Z0-9 _-]{2,24}$/)"
+          }
+        },
+        "status": {
+          ".validate": "!newData.exists() || (newData.isString() && newData.val().matches(/^(pending|joined)$/))"
+        },
+        "participants": {
+          "$participantUid": {
+            ".write": "auth != null && auth.uid === $participantUid",
+            "uid": {
+              ".validate": "newData.isString() && newData.val() === auth.uid"
+            },
+            "displayName": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 24"
+            },
+            "joinedAt": {
+              ".validate": "newData.exists()"
+            }
+          }
+        },
+        "$other": {
+          ".validate": "$other === 'name' || $other === 'ownerUid' || $other === 'createdAt' || $other === 'gameType' || $other === 'format' || $other === 'joinDeadline' || $other === 'startAt' || $other === 'matchDurationMinutes' || $other === 'breakMinutes' || $other === 'maxParticipants' || $other === 'seedTeams' || $other === 'participants' || $other === 'status'"
+        }
+      }
+    }
+  }
+}

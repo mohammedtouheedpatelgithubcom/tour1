@@ -1,10 +1,13 @@
 {
   "name": "battletour",
   "version": "1.0.0",
-  "description": "battle tourney ",
-  "main": "index.js",
+  "description": "Battle Tourney Firebase web app",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "serve": "python -m http.server 8000 --directory public",
+    "deploy": "firebase deploy",
+    "deploy:rules": "firebase deploy --only database",
+    "test": "echo \"No automated tests configured\""
   },
   "author": "mohammed touheed patel",
   "license": "ISC"
