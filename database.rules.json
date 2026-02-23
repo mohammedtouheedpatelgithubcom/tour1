@@ -44,24 +44,24 @@
         },
         "seedTeams": {
           "$index": {
-            ".validate": "newData.isString() && newData.val().matches(/^[a-zA-Z0-9 _-]{2,24}$/)"
+            ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 30"
           }
         },
         "status": {
           ".validate": "!newData.exists() || (newData.isString() && newData.val().matches(/^(pending|joined)$/))"
         },
         "participants": {
+          ".write": "auth != null",
           "$participantUid": {
-            ".write": "auth != null && auth.uid === $participantUid",
             ".validate": "newData.hasChildren(['uid', 'displayName', 'joinedAt']) && newData.child('uid').val() === $participantUid",
             "uid": {
-              ".validate": "newData.isString() && newData.val() === auth.uid && newData.val() === $participantUid"
+              ".validate": "newData.isString() && newData.val() === $participantUid"
             },
             "displayName": {
               ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 24"
             },
             "joinedAt": {
-              ".validate": "newData.exists()"
+              ".validate": "newData.isNumber() && newData.val() > 0"
             }
           }
         },

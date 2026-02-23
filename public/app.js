@@ -407,12 +407,15 @@ function renderTournaments(tournaments) {
       const displayName = safeDisplayNameFromEmail(currentUser.email);
 
       try {
-        console.log(`[Join] Joining tournament ${id} for user ${currentUser.uid}`);
+        console.log(`[Join] Joining tournament ${id} for user ${currentUser.uid} with displayName ${displayName}`);
         let blockedReason = '';
 
         const result = await window.db.ref(`tournaments/${id}`).transaction((currentData) => {
+          console.log(`[Join] Transaction reading current tournament data, exists: ${!!currentData}`);
+          
           if (!currentData || !isValidTournamentRecord(currentData)) {
             blockedReason = 'Tournament no longer exists.';
+            console.log('[Join] Blocked: tournament invalid or missing');
             return;
           }
 
@@ -427,35 +430,46 @@ function renderTournaments(tournaments) {
           const liveJoinDeadline = repaired.joinDeadline || null;
           if (liveJoinDeadline && Date.now() > liveJoinDeadline) {
             blockedReason = 'Join window is closed for this tournament.';
+            console.log('[Join] Blocked: join deadline passed');
             return;
           }
 
           if (repaired.participants[currentUser.uid]) {
             blockedReason = 'You already joined this tournament.';
+            console.log('[Join] Blocked: user already in participants list');
             return;
           }
 
           const liveMaxParticipants = Number(repaired.maxParticipants || 8);
           const liveParticipantCount = Object.keys(repaired.participants).length;
+          console.log(`[Join] Current participants: ${liveParticipantCount}/${liveMaxParticipants}`);
+          
           if (liveParticipantCount >= liveMaxParticipants) {
             blockedReason = 'Tournament is full.';
+            console.log('[Join] Blocked: tournament full');
             return;
           }
+
+          const newParticipant = {
+            uid: currentUser.uid,
+            displayName,
+            joinedAt: Date.now()
+          };
+          console.log('[Join] Creating participant record:', newParticipant);
 
           return {
             ...repaired,
             participants: {
               ...repaired.participants,
-              [currentUser.uid]: {
-                uid: currentUser.uid,
-                displayName,
-                joinedAt: Date.now()
-              }
+              [currentUser.uid]: newParticipant
             }
           };
         });
 
+        console.log(`[Join] Transaction result - committed: ${result.committed}, snapshot: ${!!result.snapshot}`);
+        
         if (!result.committed) {
+          console.error(`[Join] Transaction failed with reason: ${blockedReason}`);
           setMessage(blockedReason || 'Unable to join this tournament.', 'error');
           return;
         }
