@@ -166,9 +166,6 @@ async function ensureTournamentCoreFields(tournamentId, tournamentRecord) {
   }
 
   const updates = {};
-  if (!tournamentRecord.ownerUid) {
-    updates.ownerUid = currentUser.uid;
-  }
   if (!tournamentRecord.createdAt) {
     updates.createdAt = Date.now();
   }
@@ -421,7 +418,6 @@ function renderTournaments(tournaments) {
 
           const repaired = {
             ...currentData,
-            ownerUid: currentData.ownerUid || currentUser.uid,
             createdAt: currentData.createdAt || Date.now(),
             participants: (currentData.participants && typeof currentData.participants === 'object')
               ? currentData.participants
@@ -546,6 +542,10 @@ async function seedDemoTournaments() {
   }
 
   const now = Date.now();
+  const sharedEsportsTeams = ['Falcons', 'Dragons', 'Titans', 'Vikings', 'Ravens', 'Panthers', 'Sharks', 'Wolves', 'Knights', 'Blaze', 'Orbit', 'Nova'];
+  const sharedFootballTeams = ['Brazil', 'Argentina', 'France', 'Germany', 'Spain', 'Portugal', 'Japan', 'USA', 'Netherlands', 'Belgium', 'Croatia', 'Mexico'];
+  const sharedCricketTeams = ['India', 'Australia', 'England', 'Pakistan', 'SouthAfrica', 'NewZealand', 'SriLanka', 'Afghanistan', 'Bangladesh', 'WestIndies'];
+  const sharedBaseballTeams = ['Yankees', 'Dodgers', 'Mets', 'Giants', 'Cubs', 'RedSox', 'Astros', 'Braves'];
   const demoTournaments = {
     demo_cricket: {
       name: 'Cricket T20 Winter League',
@@ -555,8 +555,8 @@ async function seedDemoTournaments() {
       startAt: now + (48 * 60 * 60 * 1000),
       matchDurationMinutes: 180,
       breakMinutes: 30,
-      maxParticipants: 8,
-      seedTeams: ['India', 'Australia', 'England', 'Pakistan', 'SouthAfrica', 'NewZealand']
+      maxParticipants: 10,
+      seedTeams: sharedCricketTeams
     },
     demo_fifa: {
       name: 'FIFA World Cup Community',
@@ -567,7 +567,7 @@ async function seedDemoTournaments() {
       matchDurationMinutes: 25,
       breakMinutes: 10,
       maxParticipants: 16,
-      seedTeams: ['Brazil', 'Argentina', 'France', 'Germany', 'Spain', 'Portugal', 'Japan', 'USA']
+      seedTeams: sharedFootballTeams
     },
     demo_baseball: {
       name: 'Weekend Baseball Circuit',
@@ -577,8 +577,52 @@ async function seedDemoTournaments() {
       startAt: now + (60 * 60 * 1000),
       matchDurationMinutes: 120,
       breakMinutes: 20,
-      maxParticipants: 6,
-      seedTeams: ['Yankees', 'Dodgers', 'Mets', 'Giants']
+      maxParticipants: 8,
+      seedTeams: sharedBaseballTeams
+    },
+    demo_valorant: {
+      name: 'Valorant Night League',
+      gameType: 'esports',
+      format: 'round_robin',
+      joinDeadline: now + (8 * 60 * 60 * 1000),
+      startAt: now + (10 * 60 * 60 * 1000),
+      matchDurationMinutes: 45,
+      breakMinutes: 10,
+      maxParticipants: 10,
+      seedTeams: ['Sentinels', 'PaperRex', 'Fnatic', 'PRX-Academy', 'G2', 'EDward', 'GenG', 'NRG', 'Liquid', 'Karmine']
+    },
+    demo_pubg: {
+      name: 'PUBG Weekend Scrims',
+      gameType: 'esports',
+      format: 'knockout',
+      joinDeadline: now + (14 * 60 * 60 * 1000),
+      startAt: now + (20 * 60 * 60 * 1000),
+      matchDurationMinutes: 35,
+      breakMinutes: 8,
+      maxParticipants: 12,
+      seedTeams: ['SquadAlpha', 'SquadBravo', 'SquadCharlie', 'SquadDelta', 'SquadEcho', 'SquadFoxtrot', 'SquadGamma', 'SquadHelix', 'SquadIon', 'SquadJade', 'SquadKilo', 'SquadLuna']
+    },
+    demo_cs2: {
+      name: 'CS2 Pro Mix Cup',
+      gameType: 'esports',
+      format: 'league_knockout',
+      joinDeadline: now + (6 * 60 * 60 * 1000),
+      startAt: now + (16 * 60 * 60 * 1000),
+      matchDurationMinutes: 50,
+      breakMinutes: 15,
+      maxParticipants: 8,
+      seedTeams: ['Navi', 'Vitality', 'Spirit', 'Faze', 'MOUZ', 'Heroic', 'Cloud9', 'ENCE']
+    },
+    demo_weekend_open: {
+      name: 'Weekend Open Battle',
+      gameType: 'esports',
+      format: 'knockout',
+      joinDeadline: now + (30 * 60 * 60 * 1000),
+      startAt: now + (54 * 60 * 60 * 1000),
+      matchDurationMinutes: 30,
+      breakMinutes: 10,
+      maxParticipants: 16,
+      seedTeams: sharedEsportsTeams
     }
   };
 
@@ -600,7 +644,7 @@ async function seedDemoTournaments() {
       });
     }
     console.log('[Demo] All demo tournaments created successfully');
-    setMessage('Demo tournaments added. Select a tournament and open View Fixtures.', 'success');
+    setMessage('7 demo tournaments loaded with seeded players. Select a tournament and open View Fixtures.', 'success');
   } catch (error) {
     console.error('[Demo] Error creating demo tournaments:', error);
     setMessage(mapFirebaseError(error), 'error');

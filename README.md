@@ -52,6 +52,15 @@ Current default project is `battle-tourney` (see [.firebaserc](.firebaserc)).
 npm run deploy
 ```
 
+## Conduct tournaments quickly (demo + real users)
+
+1. Login with one account and open dashboard.
+2. Click **Load Demo Tournaments** to seed 7 tournaments with preloaded teams.
+3. Open the same app in Incognito/another browser and sign up additional users.
+4. Join the same tournament from different users and use **View Fixtures**.
+
+This gives immediate fixtures from demo teams and live participant joins from real users.
+
 ## App Check registration (recommended)
 
 1. In Firebase Console, open `Build -> App Check`.
