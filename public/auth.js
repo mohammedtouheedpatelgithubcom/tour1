@@ -15,38 +15,53 @@ function validatePassword(password) {
   return typeof password === 'string' && password.length >= 8;
 }
 
-// Wait for Firebase to be ready
+// Wait for Firebase to be ready before setting up event listeners
 function waitForFirebaseAuth() {
   return new Promise((resolve, reject) => {
     let attempts = 0;
     const checkInterval = setInterval(() => {
-      if (window.auth) {
+      if (window.auth && window.db) {
         clearInterval(checkInterval);
-        console.log('[AuthJS] Firebase auth ready');
+        console.log('[AuthJS] Firebase auth and db ready');
         resolve();
-      } else if (attempts > 50) {
+      } else if (attempts > 100) {
         clearInterval(checkInterval);
-        reject(new Error('Firebase auth failed to initialize after 5 seconds'));
+        reject(new Error('Firebase failed to initialize after 10 seconds'));
       }
       attempts++;
     }, 100);
   });
 }
 
-waitForFirebaseAuth().catch(error => {
+// Initialize auth listener after Firebase is ready
+waitForFirebaseAuth().then(() => {
+  console.log('[AuthJS] Setting up auth state listener');
+  window.auth.onAuthStateChanged((user) => {
+    if (user) {
+      console.log('[AuthJS] User already logged in, redirecting to dashboard');
+      window.location.replace('loginINpage.html');
+    }
+  });
+  
+  // Set up form listeners
+  if (loginForm) {
+    loginForm.addEventListener('submit', handleLogin);
+  }
+  if (signupForm) {
+    signupForm.addEventListener('submit', handleSignup);
+  }
+}).catch(error => {
   console.error('[AuthJS] Firebase auth initialization failed:', error);
   setMessage('Firebase failed to load. Please refresh the page.', 'error');
 });
 
-window.auth.onAuthStateChanged((user) => {
-  if (user) {
-    console.log('[AuthJS] User already logged in, redirecting to dashboard');
-    window.location.replace('loginINpage.html');
-  }
-});
-
-loginForm.addEventListener('submit', async (event) => {
+async function handleLogin(event) {
   event.preventDefault();
+  
+  if (!window.auth) {
+    setMessage('Firebase not ready. Please refresh the page.', 'error');
+    return;
+  }
 
   const email = normalizeEmail(document.getElementById('loginEmail').value);
   const password = document.getElementById('loginPassword').value;
@@ -61,15 +76,22 @@ loginForm.addEventListener('submit', async (event) => {
     await window.auth.signInWithEmailAndPassword(email, password);
     console.log('[AuthJS] Login successful');
     setMessage('Login successful. Redirecting...', 'success');
-    window.location.replace('loginINpage.html');
+    setTimeout(() => {
+      window.location.replace('loginINpage.html');
+    }, 500);
   } catch (error) {
     console.error('[AuthJS] Login error:', error);
-    setMessage(error.message, 'error');
+    setMessage(error.message || 'Login failed', 'error');
   }
-});
+}
 
-signupForm.addEventListener('submit', async (event) => {
+async function handleSignup(event) {
   event.preventDefault();
+  
+  if (!window.auth || !window.db) {
+    setMessage('Firebase not ready. Please refresh the page.', 'error');
+    return;
+  }
 
   const email = normalizeEmail(document.getElementById('signupEmail').value);
   const password = document.getElementById('signupPassword').value;
@@ -84,19 +106,27 @@ signupForm.addEventListener('submit', async (event) => {
     const userCredential = await window.auth.createUserWithEmailAndPassword(email, password);
     console.log('[AuthJS] Account created, writing profile for uid:', userCredential.user.uid);
     
-    if (!window.db) {
-      throw new Error('Database not ready');
-    }
-    
     await window.db.ref(`profiles/${userCredential.user.uid}`).set({
       email,
       createdAt: firebase.database.ServerValue.TIMESTAMP
     });
     console.log('[AuthJS] Profile created, signup complete');
     setMessage('Account created. Redirecting...', 'success');
-    window.location.replace('loginINpage.html');
+    setTimeout(() => {
+      window.location.replace('loginINpage.html');
+    }, 500);
   } catch (error) {
     console.error('[AuthJS] Signup error:', error);
-    setMessage(error.message, 'error');
+    const msg = error.message || 'Signup failed';
+    // Map common Firebase errors to user-friendly messages
+    let displayMsg = msg;
+    if (msg.includes('already in use')) {
+      displayMsg = 'Email already registered';
+    } else if (msg.includes('invalid-email')) {
+      displayMsg = 'Invalid email format';
+    } else if (msg.includes('weak-password')) {
+      displayMsg = 'Password too weak (min 8 characters, preferably with numbers/symbols)';
+    }
+    setMessage(displayMsg, 'error');
   }
-});
+}
