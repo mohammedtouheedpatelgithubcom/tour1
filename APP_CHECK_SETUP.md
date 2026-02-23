@@ -10,9 +10,9 @@ App Check helps Firebase verify requests are coming from your real app (not bots
 
 ## Part A: Register App Check in Firebase Console
 
-1. Open Firebase Console: https://console.firebase.google.com/project/battletour-9dc70/overview
+1. Open Firebase Console: https://console.firebase.google.com/project/battle-tourney/overview
 2. In left menu, go to **Build → App Check**.
-3. In the apps list, select your **Web app** (`battletour-9dc70`).
+3. In the apps list, select your **Web app** (`battle-tourney`).
 4. Click **Register**.
 5. Provider: choose **reCAPTCHA v3**.
 6. Save and copy the **site key**.

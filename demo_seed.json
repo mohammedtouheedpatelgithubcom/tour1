@@ -1,0 +1,71 @@
+﻿{
+    "demo_baseball":  {
+                          "joinDeadline":  1771885949235,
+                          "startAt":  1771824749235,
+                          "matchDurationMinutes":  120,
+                          "maxParticipants":  6,
+                          "format":  "round_robin",
+                          "seedTeams":  [
+                                            "Yankees",
+                                            "Dodgers",
+                                            "Mets",
+                                            "Giants"
+                                        ],
+                          "createdAt":  1771821149235,
+                          "name":  "Weekend Baseball Circuit",
+                          "gameType":  "baseball",
+                          "ownerUid":  "system",
+                          "breakMinutes":  20,
+                          "participants":  {
+
+                                           }
+                      },
+    "demo_fifa":  {
+                      "joinDeadline":  1771864349235,
+                      "startAt":  1771950749235,
+                      "matchDurationMinutes":  25,
+                      "maxParticipants":  16,
+                      "format":  "knockout",
+                      "seedTeams":  [
+                                        "Brazil",
+                                        "Argentina",
+                                        "France",
+                                        "Germany",
+                                        "Spain",
+                                        "Portugal",
+                                        "Japan",
+                                        "USA"
+                                    ],
+                      "createdAt":  1771821149235,
+                      "name":  "FIFA World Cup Community",
+                      "gameType":  "fifa",
+                      "ownerUid":  "system",
+                      "breakMinutes":  10,
+                      "participants":  {
+
+                                       }
+                  },
+    "demo_cricket":  {
+                         "joinDeadline":  1771907549235,
+                         "startAt":  1771993949235,
+                         "matchDurationMinutes":  180,
+                         "maxParticipants":  8,
+                         "format":  "league_knockout",
+                         "seedTeams":  [
+                                           "India",
+                                           "Australia",
+                                           "England",
+                                           "Pakistan",
+                                           "SouthAfrica",
+                                           "NewZealand"
+                                       ],
+                         "createdAt":  1771821149235,
+                         "name":  "Cricket T20 Winter League",
+                         "gameType":  "cricket_t20",
+                         "ownerUid":  "system",
+                         "breakMinutes":  30,
+                         "participants":  {
+
+                                          }
+                     }
+}

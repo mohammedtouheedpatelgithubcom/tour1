@@ -15,19 +15,19 @@ git push origin --force --tags
 Even after removing from GitHub, your keys were public. Anyone who viewed your repo has them.
 
 **Go to Firebase Console NOW:**
-1. Visit: https://console.firebase.google.com/project/battletour-9dc70/settings/general
+1. Visit: https://console.firebase.google.com/project/battle-tourney/settings/general
 2. Under "Your apps" → Web app section
 3. **Delete the current web app** or regenerate keys
 4. Create a NEW web app registration
 5. Copy the NEW config to `public/firebase-config.js`
 
 #### 3. Restrict API Key Usage (Highly Recommended)
-1. Go to: https://console.cloud.google.com/apis/credentials?project=battletour-9dc70
+1. Go to: https://console.cloud.google.com/apis/credentials?project=battle-tourney
 2. Find your API key
 3. Click "Edit"
 4. Under "Application restrictions":
    - Select "HTTP referrers"
-   - Add: `https://battletour-9dc70.web.app/*`
+   - Add: `https://battle-tourney.web.app/*`
    - Add: `http://localhost:8000/*` (for testing)
 5. Under "API restrictions":
    - Restrict to only needed APIs (Firebase, Realtime Database, Auth)

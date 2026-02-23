@@ -44,6 +44,8 @@ firebase login
 firebase use --add
 ```
 
+Current default project is `battle-tourney` (see [.firebaserc](.firebaserc)).
+
 3. Deploy hosting + database rules:
 
 ```powershell
@@ -53,7 +55,7 @@ npm run deploy
 ## App Check registration (recommended)
 
 1. In Firebase Console, open `Build -> App Check`.
-2. Select your Web app (`battletour-9dc70`) and click `Register`.
+2. Select your Web app (`battle-tourney`) and click `Register`.
 3. Choose `reCAPTCHA v3` provider and copy the site key.
 4. Put that key in `public/firebase-config.js` as `appCheckSiteKey`.
 5. Deploy hosting again:
@@ -67,6 +69,7 @@ Detailed walkthrough: [APP_CHECK_SETUP.md](APP_CHECK_SETUP.md)
 ## Security notes
 
 - Frontend Firebase config is public by design; security is enforced by Authentication and Database Rules.
+- Keep `public/firebase-config.js` out of Git history (already in `.gitignore`).
 - Rules now allow:
 	- users to read/write their own `profiles/{uid}`
 	- authenticated users to read tournaments
@@ -74,4 +77,4 @@ Detailed walkthrough: [APP_CHECK_SETUP.md](APP_CHECK_SETUP.md)
 
 ## Live URL
 
-https://battletour-9dc70.web.app/
+https://battle-tourney.web.app/

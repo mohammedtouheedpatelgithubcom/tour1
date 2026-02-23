@@ -155,7 +155,7 @@ npx firebase-tools login
 2. Confirm selected project:
 
 ```powershell
-npx firebase-tools use battletour-9dc70
+npx firebase-tools use battle-tourney
 ```
 
 3. Deploy hosting + rules:
