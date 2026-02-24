@@ -16,7 +16,7 @@
           ".validate": "newData.isString() && newData.val().matches(/^[a-zA-Z0-9 _-]{3,60}$/)"
         },
         "ownerUid": {
-          ".validate": "newData.isString() && ((!data.exists() && newData.val() === auth.uid) || (data.exists() && newData.val() === data.val()))"
+          ".validate": "!newData.exists() || (newData.isString() && ((!data.exists() && newData.val() === auth.uid) || (data.exists() && newData.val() === data.val())))"
         },
         "createdAt": {
           ".validate": "newData.exists()"

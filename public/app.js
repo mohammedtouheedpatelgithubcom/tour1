@@ -13,6 +13,10 @@ const matchDurationInput = document.getElementById('matchDurationMinutes');
 const breakMinutesInput = document.getElementById('breakMinutes');
 const maxParticipantsInput = document.getElementById('maxParticipants');
 const seedDemoBtn = document.getElementById('seedDemoBtn');
+const demoTournamentIds = ['demo_cricket', 'demo_fifa', 'demo_baseball', 'demo_valorant', 'demo_pubg', 'demo_cs2', 'demo_weekend_open'];
+const adminEmails = Array.isArray(window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.adminEmails)
+  ? window.FIREBASE_CONFIG.adminEmails.map((email) => String(email).trim().toLowerCase()).filter(Boolean)
+  : [];
 
 let currentUser = null;
 let authReady = false;
@@ -20,6 +24,11 @@ let selectedTournamentId = null;
 let cachedTournaments = {};
 let tournamentListenerActive = false;
 let firebaseReady = false;
+let isCurrentUserAdmin = false;
+
+if (seedDemoBtn) {
+  seedDemoBtn.style.display = 'none';
+}
 
 // Ensure Firebase is ready before using it
 function waitForFirebase() {
@@ -46,7 +55,7 @@ waitForFirebase()
     console.log('[App] Firebase ready, setting up auth listener');
     // Now set up the auth state listener
     window.auth.onAuthStateChanged((user) => {
-      console.log('[Auth] Auth state changed:', user ? `User: ${user.email}` : 'No user');
+      console.log('[Auth] Auth state changed');
       authReady = true;
 
       if (!user) {
@@ -56,8 +65,9 @@ waitForFirebase()
       }
 
       currentUser = user;
+      isCurrentUserAdmin = adminEmails.includes(String(user.email || '').toLowerCase());
       welcomeText.textContent = `Welcome, ${user.email}`;
-      console.log('[Auth] User authenticated, setting up tournament listener for user:', user.uid);
+      console.log('[Auth] User authenticated, setting up tournament listener');
 
       if (!window.db) {
         console.error('[Auth] Database not available');
@@ -76,10 +86,9 @@ waitForFirebase()
       window.db.ref('tournaments').on('value', (snapshot) => {
         console.log('[Listener] Tournament snapshot received');
         cachedTournaments = snapshot.val() || {};
-        console.log('[Listener] Tournaments data keys:', Object.keys(cachedTournaments));
-        console.log('[Listener] Full tournaments object:', cachedTournaments);
         renderTournaments(cachedTournaments);
         repairLegacyTournaments();
+        updateDemoSeedButtonVisibility();
         tournamentListenerActive = true;
       }, (error) => {
         console.error('[Listener] Error listening to tournaments:', error);
@@ -99,6 +108,30 @@ function setMessage(text, type = '') {
 
 function safeDisplayNameFromEmail(email) {
   return (email || 'Player').split('@')[0].slice(0, 24);
+}
+
+function hasActiveDemoTournaments(tournaments) {
+  return demoTournamentIds.some((id) => !!(tournaments && tournaments[id] && isValidTournamentRecord(tournaments[id])));
+}
+
+function canCurrentUserSeedDemo() {
+  if (!currentUser) {
+    return false;
+  }
+  if (isCurrentUserAdmin) {
+    return true;
+  }
+  if (adminEmails.length > 0) {
+    return false;
+  }
+  return !hasActiveDemoTournaments(cachedTournaments);
+}
+
+function updateDemoSeedButtonVisibility() {
+  if (!seedDemoBtn) {
+    return;
+  }
+  seedDemoBtn.style.display = canCurrentUserSeedDemo() ? '' : 'none';
 }
 
 function sanitizeTournamentName(input) {
@@ -352,7 +385,6 @@ function renderBracket(tournaments) {
 }
 
 function renderTournaments(tournaments) {
-  console.log('[Render] Tournaments data:', tournaments);
   tournamentList.innerHTML = '';
   const entries = getValidTournaments(tournaments);
   
@@ -384,7 +416,7 @@ function renderTournaments(tournaments) {
       ? 'Joined'
       : (isJoinClosed ? 'Closed' : (isFull ? 'Full' : 'Open'));
     const joinDeadlineLabel = normalized.joinDeadline ? `Join by: ${formatDate(normalized.joinDeadline)}` : 'Join anytime';
-    meta.textContent = `ID: ${id} • ${normalized.gameType} • ${normalized.format} • Players: ${participantCount}/${normalized.maxParticipants} • ${joinDeadlineLabel} • Status: ${joinStateLabel}`;
+    meta.textContent = `${normalized.gameType} • ${normalized.format} • Players: ${participantCount}/${normalized.maxParticipants} • ${joinDeadlineLabel} • Status: ${joinStateLabel}`;
 
     info.appendChild(title);
     info.appendChild(document.createElement('br'));
@@ -407,12 +439,10 @@ function renderTournaments(tournaments) {
       const displayName = safeDisplayNameFromEmail(currentUser.email);
 
       try {
-        console.log(`[Join] Joining tournament ${id} for user ${currentUser.uid} with displayName ${displayName}`);
+        console.log('[Join] Joining selected tournament');
         let blockedReason = '';
 
         const result = await window.db.ref(`tournaments/${id}`).transaction((currentData) => {
-          console.log(`[Join] Transaction reading current tournament data, exists: ${!!currentData}`);
-          
           if (!currentData || !isValidTournamentRecord(currentData)) {
             blockedReason = 'Tournament no longer exists.';
             console.log('[Join] Blocked: tournament invalid or missing');
@@ -455,7 +485,7 @@ function renderTournaments(tournaments) {
             displayName,
             joinedAt: Date.now()
           };
-          console.log('[Join] Creating participant record:', newParticipant);
+          console.log('[Join] Creating participant record for authenticated user');
 
           return {
             ...repaired,
@@ -550,6 +580,11 @@ async function seedDemoTournaments() {
     return;
   }
 
+  if (!canCurrentUserSeedDemo()) {
+    setMessage('Demo events are already active.', 'error');
+    return;
+  }
+
   if (!window.db) {
     setMessage('Database not ready. Please refresh the page.', 'error');
     return;
@@ -641,10 +676,19 @@ async function seedDemoTournaments() {
   };
 
   try {
-    console.log('[Demo] Starting to seed demo tournaments...');
+    let createdCount = 0;
+    let existingCount = 0;
+
     for (const [demoId, tournament] of Object.entries(demoTournaments)) {
-      console.log(`[Demo] Writing: ${demoId} (${tournament.name})`);
-      await window.db.ref(`tournaments/${demoId}`).set({
+      const demoRef = window.db.ref(`tournaments/${demoId}`);
+      const existingSnap = await demoRef.once('value');
+
+      if (existingSnap.exists() && isValidTournamentRecord(existingSnap.val())) {
+        existingCount += 1;
+        continue;
+      }
+
+      await demoRef.set({
         ...tournament,
         ownerUid: currentUser.uid,
         createdAt: Date.now(),
@@ -656,9 +700,16 @@ async function seedDemoTournaments() {
           }
         }
       });
+      createdCount += 1;
     }
-    console.log('[Demo] All demo tournaments created successfully');
-    setMessage('7 demo tournaments loaded with seeded players. Select a tournament and open View Fixtures.', 'success');
+
+    if (createdCount > 0) {
+      setMessage(`${createdCount} demo events initialized. ${existingCount} already active.`, 'success');
+    } else {
+      setMessage('Demo events are already active. No new events were created.', 'success');
+    }
+
+    updateDemoSeedButtonVisibility();
   } catch (error) {
     console.error('[Demo] Error creating demo tournaments:', error);
     setMessage(mapFirebaseError(error), 'error');
@@ -698,9 +749,8 @@ createTournamentForm.addEventListener('submit', async (event) => {
   }
 
   try {
-    console.log(`[Create] Creating tournament: ${name} for user ${currentUser.uid}`);
+    console.log('[Create] Creating tournament');
     const payload = buildTournamentPayload(name);
-    console.log('[Create] Payload:', payload);
     await window.db.ref('tournaments').push(payload);
 
     nameInput.value = '';

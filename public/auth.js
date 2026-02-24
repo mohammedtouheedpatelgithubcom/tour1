@@ -72,7 +72,7 @@ async function handleLogin(event) {
   }
 
   try {
-    console.log('[AuthJS] Attempting login for:', email);
+    console.log('[AuthJS] Attempting login');
     await window.auth.signInWithEmailAndPassword(email, password);
     console.log('[AuthJS] Login successful');
     setMessage('Login successful. Redirecting...', 'success');
@@ -102,9 +102,9 @@ async function handleSignup(event) {
   }
 
   try {
-    console.log('[AuthJS] Attempting signup for:', email);
+    console.log('[AuthJS] Attempting signup');
     const userCredential = await window.auth.createUserWithEmailAndPassword(email, password);
-    console.log('[AuthJS] Account created, writing profile for uid:', userCredential.user.uid);
+    console.log('[AuthJS] Account created, writing profile');
     
     await window.db.ref(`profiles/${userCredential.user.uid}`).set({
       email,
